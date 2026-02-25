@@ -3,3 +3,6 @@ dist/
 *.tsbuildinfo
 .DS_Store
 .mcpregistry_*
+.claude/
+docs/submissions-guide.md
+scripts/submit-to-directories.mjs
