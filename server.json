@@ -7,12 +7,12 @@
     "url": "https://github.com/anipotts/imessage-mcp",
     "source": "github"
   },
-  "version": "1.2.0",
+  "version": "1.2.1",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "imessage-mcp",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "transport": {
         "type": "stdio"
       },
@@ -20,7 +20,7 @@
         {
           "name": "IMESSAGE_DB",
           "description": "Path to iMessage database (default: ~/Library/Messages/chat.db)",
-          "required": false
+          "isRequired": false
         }
       ],
       "runtimeHint": "node"
