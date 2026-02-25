@@ -1,0 +1,17 @@
+src
+tests
+.git
+.github
+assets
+docs
+scripts
+node_modules
+agents
+skills
+hooks
+.claude
+*.md
+tsconfig.json
+vitest.config.*
+.eslintrc*
+.prettierrc*

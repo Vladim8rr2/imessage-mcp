@@ -1,6 +1,6 @@
 {
   "name": "imessage-mcp",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "mcpName": "io.github.anipotts/imessage-mcp",
   "description": "iMessage MCP server — 26 tools for searching, analyzing, and exploring your entire iMessage history on macOS",
   "author": "Ani Potts",
@@ -15,7 +15,8 @@
     "bin",
     "README.md",
     "LICENSE",
-    "server.json"
+    "server.json",
+    "smithery.yaml"
   ],
   "scripts": {
     "build": "tsc",

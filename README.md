@@ -7,17 +7,19 @@
 [![CI](https://github.com/anipotts/imessage-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/anipotts/imessage-mcp/actions/workflows/ci.yml)
 [![Node](https://img.shields.io/badge/Node.js-18%2B-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
 
-**26 tools for exploring your iMessage history on macOS.**
+**26 tools for locally exploring your iMessage history with AI.**
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/anipotts/imessage-mcp/main/assets/demo-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/anipotts/imessage-mcp/main/assets/demo-light.png">
-    <img src="https://raw.githubusercontent.com/anipotts/imessage-mcp/main/assets/demo-dark.png" alt="imessage-mcp demo — emoji reactions analysis">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/anipotts/imessage-mcp/main/assets/demo-dark.gif">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/anipotts/imessage-mcp/main/assets/demo-light.gif">
+    <img src="https://raw.githubusercontent.com/anipotts/imessage-mcp/main/assets/demo-dark.gif" alt="imessage-mcp demo" width="720">
   </picture>
 </p>
 
-An [MCP server](https://modelcontextprotocol.io) that gives AI assistants **read-only** access to your local iMessage database — with full control over what's shared. Nothing is written, modified, or uploaded. Your messages stay on your Mac; the AI only sees what you ask about. Enable [Safe Mode](#safe-mode) to redact all message text and share only metadata.
+An [MCP server](https://modelcontextprotocol.io) that gives AI assistants **read-only** access to your local iMessage database. Nothing is written, modified, or uploaded. Your messages stay on your Mac; the AI only sees what you ask about.
+
+> **Read-only access to 2 local files** (`chat.db` + `AddressBook`). Zero network requests. Nothing is written, uploaded, or shared. All 26 tools are annotated `readOnlyHint: true` — your MCP client can auto-approve every call without prompts.
 
 ## Install
 
@@ -31,19 +33,13 @@ Or run without installing:
 npx imessage-mcp doctor
 ```
 
+**[Smithery](https://smithery.ai):** One-click install via the Smithery registry — search for `imessage-mcp`.
+
 ### Add to your AI client
 
 ```bash
 # Claude Code (one command)
 claude mcp add imessage -- npx -y imessage-mcp
-```
-
-### Claude Code Plugin
-
-For slash commands and agents:
-
-```bash
-claude plugin add anipotts/imessage-mcp
 ```
 
 ```bash
@@ -63,115 +59,62 @@ claude plugin add anipotts/imessage-mcp
 
 See [Setup](#setup) for Cursor, Windsurf, VS Code, Codex CLI, Cline, JetBrains, and Zed.
 
+### Claude Code Plugin
+
+For slash commands and agents:
+
+```bash
+claude plugin add anipotts/imessage-mcp
+```
+
 ### Prerequisites
 
 1. **macOS** (iMessage is macOS-only)
 2. **Node.js 18+** (`node --version`)
-3. **Full Disk Access** for your terminal: System Settings > Privacy & Security > Full Disk Access
+3. **Database access** for your host application — macOS protects `chat.db` with its Application Data permission. Grant access in: **System Settings > Privacy & Security > Full Disk Access** and enable the app running the MCP server (your terminal, Claude Desktop, or Cursor). GUI apps like Claude Desktop and Cursor may already have this permission.
+4. **Messages in iCloud** enabled on your Mac (if you use multiple devices) — see [iCloud Sync & Multiple Devices](#icloud-sync--multiple-devices)
 
-## Tools
+## Privacy & Security
 
-26 tools across 10 categories. All read-only. All annotated with `readOnlyHint: true` — your MCP client can auto-approve every tool without prompts.
+imessage-mcp reads your local iMessage database in **read-only mode**. No data leaves your machine. Nothing is written, modified, uploaded, or shared.
 
-### Messages
+| Path | Access | Purpose |
+| --- | --- | --- |
+| `~/Library/Messages/chat.db` | Read-only | Your iMessage database |
+| `~/Library/Application Support/AddressBook/` | Read-only | Contact name resolution |
 
-| Tool | Description |
-|------|-------------|
-| `search_messages` | Full-text search with filters: query, contact, date range, direction, group chat, attachments |
-| `get_conversation` | Conversation thread with cursor-based pagination |
+No other files are accessed. No external APIs are called.
 
-### Contacts
-
-| Tool | Description |
-|------|-------------|
-| `list_contacts` | All contacts with message counts and date ranges |
-| `get_contact` | Deep contact info with stats and yearly breakdown |
-| `resolve_contact` | Fuzzy-match a name, phone number, or email to a contact |
-
-### Analytics
-
-| Tool | Description |
-|------|-------------|
-| `message_stats` | Aggregate stats with time-series grouping |
-| `contact_stats` | Per-contact volumes, trends, and hourly patterns |
-| `temporal_heatmap` | 7x24 activity heatmap (day-of-week by hour) |
-
-### Memories
-
-| Tool | Description |
-|------|-------------|
-| `on_this_day` | Messages from this date in past years |
-| `first_last_message` | First and last message ever exchanged with a contact |
-
-### Patterns
-
-| Tool | Description |
-|------|-------------|
-| `who_initiates` | Who starts conversations? Initiation ratio per contact |
-| `streaks` | Consecutive-day messaging streaks |
-| `double_texts` | Detect double-texting and unanswered message patterns |
-| `conversation_gaps` | Find the longest silences in a conversation |
-| `forgotten_contacts` | Contacts you've lost touch with |
-
-### Wrapped
-
-| Tool | Description |
-|------|-------------|
-| `yearly_wrapped` | Spotify Wrapped for iMessage -- full year summary |
-
-### Groups
-
-| Tool | Description |
-|------|-------------|
-| `list_group_chats` | Group chats with member counts and activity |
-| `get_group_chat` | Per-member stats and monthly activity timeline |
-
-### Attachments & Media
-
-| Tool | Description |
-|------|-------------|
-| `list_attachments` | Query attachments by contact, MIME type, and date range |
-
-### Reactions, Receipts, Threads, Edits & Effects
-
-| Tool | Description |
-|------|-------------|
-| `get_reactions` | Tapback distribution, top reactors, most-reacted messages |
-| `get_read_receipts` | Read/delivery latency and unread patterns |
-| `get_thread` | Reconstruct reply thread trees |
-| `get_edited_messages` | Edited and unsent messages with timing |
-| `get_message_effects` | Slam, loud, confetti, fireworks analytics |
-
-### Sync
-
-| Tool | Description |
-|------|-------------|
-| `check_new_messages` | Track new messages since your last check (baseline + delta) |
-
-### System
-
-| Tool | Description |
-|------|-------------|
-| `help` | Full tool guide with usage examples |
+```
+chat.db --> [imessage-mcp] --> stdio/http --> [Your MCP Client] --> AI Provider
+  ^                                              ^
+  Your Mac only                         Already authorized by you
+```
 
 ## What Can You Ask?
 
 Once connected, ask your AI assistant anything about your messages in plain language:
 
-- "How many messages have I sent this year?"
-- "Show my conversation with Mom"
-- "Who reacts to my messages the most?"
-- "What time of day am I most active texting?"
-- "What was the first text I ever sent my partner?"
-- "What was I texting about on this day last year?"
+- "Give me my 2024 iMessage Wrapped"
 - "Do I always text first with [name]?"
 - "What's my longest texting streak?"
-- "Show me messages people unsent"
-- "Give me my 2024 iMessage Wrapped"
-- "Who have I lost touch with?"
-- "Show me the longest silence between me and [name]"
+- "Who reacts to my messages the most?"
+- "What was the first text I ever sent my partner?"
+- "What was I texting about on this day last year?"
 - "Do I double-text [name] a lot?"
+- "Who have I lost touch with?"
+
+<details>
+<summary><strong>More examples</strong></summary>
+
+- "Show me the longest silence between me and [name]"
+- "How many messages have I sent this year?"
+- "Show my conversation with Mom"
+- "What time of day am I most active texting?"
+- "Show me messages people unsent"
 - "What are the most popular group chats?"
+
+</details>
 
 <p align="center">
   <picture>
@@ -180,6 +123,53 @@ Once connected, ask your AI assistant anything about your messages in plain lang
     <img src="https://raw.githubusercontent.com/anipotts/imessage-mcp/main/assets/wrapped-dark.png" alt="iMessage Wrapped — year-in-review summary">
   </picture>
 </p>
+
+## Tools
+
+26 tools across 10 categories. All read-only. All annotated with `readOnlyHint: true`.
+
+| Tool | Description |
+| --- | --- |
+| `search_messages` | Full-text search with filters: query, contact, date range, direction, group chat, attachments |
+| `yearly_wrapped` | Spotify Wrapped for iMessage — full year summary |
+| `who_initiates` | Who starts conversations? Initiation ratio per contact |
+| `streaks` | Consecutive-day messaging streaks |
+| `get_reactions` | Tapback distribution, top reactors, most-reacted messages |
+| `on_this_day` | Messages from this date in past years |
+
+<details>
+<summary><strong>All 26 tools</strong></summary>
+
+| Tool | Description |
+| --- | --- |
+| `search_messages` | Full-text search with filters: query, contact, date range, direction, group chat, attachments |
+| `get_conversation` | Conversation thread with cursor-based pagination |
+| `list_contacts` | All contacts with message counts and date ranges |
+| `get_contact` | Deep contact info with stats and yearly breakdown |
+| `resolve_contact` | Fuzzy-match a name, phone number, or email to a contact |
+| `message_stats` | Aggregate stats with time-series grouping |
+| `contact_stats` | Per-contact volumes, trends, and hourly patterns |
+| `temporal_heatmap` | 7x24 activity heatmap (day-of-week by hour) |
+| `on_this_day` | Messages from this date in past years |
+| `first_last_message` | First and last message ever exchanged with a contact |
+| `who_initiates` | Who starts conversations? Initiation ratio per contact |
+| `streaks` | Consecutive-day messaging streaks |
+| `double_texts` | Detect double-texting and unanswered message patterns |
+| `conversation_gaps` | Find the longest silences in a conversation |
+| `forgotten_contacts` | Contacts you've lost touch with |
+| `yearly_wrapped` | Spotify Wrapped for iMessage — full year summary |
+| `list_group_chats` | Group chats with member counts and activity |
+| `get_group_chat` | Per-member stats and monthly activity timeline |
+| `list_attachments` | Query attachments by contact, MIME type, and date range |
+| `get_reactions` | Tapback distribution, top reactors, most-reacted messages |
+| `get_read_receipts` | Read/delivery latency and unread patterns |
+| `get_thread` | Reconstruct reply thread trees |
+| `get_edited_messages` | Edited and unsent messages with timing |
+| `get_message_effects` | Slam, loud, confetti, fireworks analytics |
+| `check_new_messages` | Track new messages since your last check (baseline + delta) |
+| `help` | Full tool guide with usage examples |
+
+</details>
 
 ## Setup
 
@@ -219,7 +209,8 @@ Or add to `.mcp.json` in your project root:
 }
 ```
 
-### OpenAI Codex CLI
+<details>
+<summary><strong>OpenAI Codex CLI</strong></summary>
 
 ```bash
 codex --mcp-config '{"imessage":{"command":"npx","args":["-y","imessage-mcp"]}}'
@@ -238,8 +229,10 @@ Or add to `~/.codex/config.json`:
 }
 ```
 
+</details>
+
 <details>
-<summary>Cursor</summary>
+<summary><strong>Cursor</strong></summary>
 
 Add to `~/.cursor/mcp.json`:
 
@@ -253,10 +246,11 @@ Add to `~/.cursor/mcp.json`:
   }
 }
 ```
+
 </details>
 
 <details>
-<summary>Windsurf</summary>
+<summary><strong>Windsurf</strong></summary>
 
 Add to `~/.codeium/windsurf/mcp_config.json`:
 
@@ -270,12 +264,15 @@ Add to `~/.codeium/windsurf/mcp_config.json`:
   }
 }
 ```
+
 </details>
 
 <details>
-<summary>VS Code (GitHub Copilot)</summary>
+<summary><strong>VS Code (GitHub Copilot)</strong></summary>
 
 Add to `.vscode/mcp.json` in your project root:
+
+**stdio (default):**
 
 ```json
 {
@@ -287,10 +284,24 @@ Add to `.vscode/mcp.json` in your project root:
   }
 }
 ```
+
+**HTTP transport (remote / Docker):**
+
+```json
+{
+  "servers": {
+    "imessage": {
+      "type": "http",
+      "url": "http://localhost:3000/mcp"
+    }
+  }
+}
+```
+
 </details>
 
 <details>
-<summary>Cline (VS Code)</summary>
+<summary><strong>Cline (VS Code)</strong></summary>
 
 Add via the Cline MCP settings UI, or edit `cline_mcp_settings.json`:
 
@@ -304,20 +315,22 @@ Add via the Cline MCP settings UI, or edit `cline_mcp_settings.json`:
   }
 }
 ```
+
 </details>
 
 <details>
-<summary>JetBrains IDEs</summary>
+<summary><strong>JetBrains IDEs</strong></summary>
 
 Settings > Tools > AI Assistant > MCP Servers > Add:
 
 - **Name:** `imessage`
 - **Command:** `npx`
 - **Args:** `-y imessage-mcp`
+
 </details>
 
 <details>
-<summary>Zed</summary>
+<summary><strong>Zed</strong></summary>
 
 Add to `~/.config/zed/settings.json`:
 
@@ -333,13 +346,15 @@ Add to `~/.config/zed/settings.json`:
   }
 }
 ```
+
 </details>
 
 ## CLI Commands
 
-### `imessage-mcp doctor`
+<details>
+<summary><strong><code>imessage-mcp doctor</code></strong> — run setup diagnostics</summary>
 
-Run setup diagnostics. Checks macOS version, Node.js version, chat.db access, Full Disk Access, AddressBook, and message count.
+Checks macOS version, Node.js version, chat.db access, database permissions, AddressBook, and message count.
 
 ```
 $ npx imessage-mcp doctor
@@ -349,7 +364,7 @@ imessage-mcp doctor
   ✓ macOS: Running on macOS (darwin)
   ✓ Node.js: Node v22.0.0 (>= 18 required)
   ✓ chat.db: Found at /Users/you/Library/Messages/chat.db
-  ✓ Full Disk Access: Database readable
+  ✓ Database access: Database readable
   ✓ Messages: 97,432 messages indexed
   ✓ AddressBook: 342 contacts resolved
 
@@ -370,9 +385,10 @@ Pass `--json` for machine-readable output:
 npx imessage-mcp doctor --json
 ```
 
-### `imessage-mcp dump`
+</details>
 
-Export messages or contacts to JSON.
+<details>
+<summary><strong><code>imessage-mcp dump</code></strong> — export messages or contacts to JSON</summary>
 
 ```bash
 # Export last 1000 messages
@@ -394,38 +410,53 @@ npx imessage-mcp dump --contacts --all > all-contacts.json
 npx imessage-mcp dump --all > all-messages.json
 ```
 
-## Privacy & Security
+</details>
 
-imessage-mcp reads your local iMessage database in **read-only mode**. No data leaves your machine. Nothing is written, modified, uploaded, or shared.
+## Transport Modes
 
-The tool accesses exactly two locations on disk:
+By default, imessage-mcp uses **stdio** transport — the standard for local MCP clients like Claude Desktop and Claude Code. For workflow tools (n8n, Lutra, Copilot Studio) or remote access, HTTP transport is available.
 
-| Path | Access | Purpose |
-|------|--------|---------|
-| `~/Library/Messages/chat.db` | Read-only | Your iMessage database |
-| `~/Library/Application Support/AddressBook/` | Read-only | Contact name resolution |
+| Flag | Short | Default | Description |
+| --- | --- | --- | --- |
+| `--transport` | `-t` | `stdio` | Transport mode: `stdio`, `http`, or `sse` |
+| `--port` | `-p` | `3000` | Port for HTTP/SSE transport |
+| `--host` | `-H` | `127.0.0.1` | Bind address (use `0.0.0.0` for Docker/remote) |
 
-No other files are accessed. No external APIs are called. You can verify this yourself:
+<details>
+<summary><strong>Streamable HTTP</strong> (recommended for HTTP)</summary>
 
 ```bash
-grep -rn "readFileSync\|openDatabase\|sqlite" src/
+npx imessage-mcp --transport http --port 3000
 ```
 
-### Why Full Disk Access?
+Starts a Streamable HTTP server on `http://127.0.0.1:3000/mcp`. Supports `POST`, `GET`, and `DELETE` on `/mcp` with session management via `mcp-session-id` headers. This is the MCP 2025-03-26 standard.
 
-macOS protects `~/Library/Messages/chat.db`. Your terminal needs Full Disk Access to read it. This is an Apple requirement, not something imessage-mcp imposes.
+</details>
 
-### How your data flows
+<details>
+<summary><strong>Legacy SSE</strong> (for older clients)</summary>
 
+```bash
+npx imessage-mcp --transport sse --port 3000
 ```
-chat.db --> [imessage-mcp] --> stdio --> [Your MCP Client] --> AI Provider
-  ^                                          ^
-  Your Mac only                     Already authorized by you
+
+Starts a legacy SSE server: `GET /sse` to establish the stream, `POST /messages?sessionId=<id>` for JSON-RPC requests. Use this only if your client does not support Streamable HTTP.
+
+</details>
+
+## Docker
+
+Run imessage-mcp as an HTTP server in Docker. Copy your `chat.db` to a volume mount:
+
+```bash
+docker build -t imessage-mcp .
+docker run -p 3000:3000 -v /path/to/chat.db:/data/chat.db:ro imessage-mcp
 ```
 
-imessage-mcp makes zero network requests. Your data only leaves your machine through your MCP client (Claude Desktop, Cursor, etc.), which you have already authorized separately.
+The container starts with `--transport http --host 0.0.0.0` on port 3000 by default. Connect any MCP client to `http://localhost:3000/mcp`.
 
-## Safe Mode
+<details>
+<summary><strong>Safe Mode</strong> — redact all message bodies</summary>
 
 Prevent message bodies from being sent to the AI. Only metadata (counts, dates, contact names) is returned. No actual message text.
 
@@ -451,17 +482,25 @@ Prevent message bodies from being sent to the AI. Only metadata (counts, dates, 
 
 Useful for demos, shared environments, or when you want analytics without exposing private conversations.
 
-## Smart Filtering
+</details>
+
+<details>
+<summary><strong>Smart Filtering</strong> — spam/promo exclusion</summary>
 
 By default, listing and global search tools only include contacts you have actually replied to. This filters out spam, promo texts, and unknown senders.
 
 **Filtered tools:** `search_messages` (global), `list_contacts`, `message_stats` (global), `temporal_heatmap` (global), `who_initiates` (global), `streaks` (global), `on_this_day` (global), `forgotten_contacts`, `yearly_wrapped`.
 
-**Unfiltered tools:** `get_conversation`, `get_contact`, `contact_stats`, `first_last_message`, `conversation_gaps`, `get_reactions`, `get_read_receipts`, `get_thread`, `get_edited_messages`, `get_message_effects`, group chats, attachments, `check_new_messages`. These always return results for any contact you specify.
+**Unfiltered tools:** `get_conversation`, `get_contact`, `contact_stats`, `first_last_message`, `conversation_gaps`, `get_reactions`, `get_read_receipts`, `get_thread`, `get_edited_messages`, `get_message_effects`, group chats, attachments, `check_new_messages`.
 
 To include all contacts (including unrecognized senders), pass `include_all: true` to any filtered tool.
 
-## Sync & New Messages
+</details>
+
+<details>
+<summary><strong>Sync & New Messages</strong> — real-time notifications</summary>
+
+> **Looking for iCloud sync?** This section covers real-time message tracking within imessage-mcp. To sync your full message history from iPhone/iPad to your Mac, see [iCloud Sync & Multiple Devices](#icloud-sync--multiple-devices).
 
 By default, every query reads the latest data — if someone texts you, your next tool call sees it immediately. No sync needed.
 
@@ -486,47 +525,160 @@ For push notifications (opt-in):
 
 This watches your iMessage database for changes and notifies your AI client within seconds. Uses macOS FSEvents — zero CPU when idle.
 
+</details>
+
 ## Configuration
 
 | Variable | Default | Description |
-|----------|---------|-------------|
+| --- | --- | --- |
 | `IMESSAGE_DB` | `~/Library/Messages/chat.db` | Path to iMessage database |
-| `IMESSAGE_SAFE_MODE` | `false` | Set to `1` to redact all message bodies. Tools return only metadata. |
-| `IMESSAGE_SYNC` | `off` | Message sync mode: `off` (default), `watch` (FSEvents, near-real-time), or `poll:N` (every N seconds). |
+| `IMESSAGE_SAFE_MODE` | `false` | Set to `1` to redact all message bodies |
+| `IMESSAGE_SYNC` | `off` | Sync mode: `off`, `watch` (FSEvents), or `poll:N` (every N seconds) |
+
+<details>
+<summary><strong>iCloud Sync & Multiple Devices</strong></summary>
+
+### iCloud Sync & Multiple Devices
+
+imessage-mcp reads your Mac's local database (`~/Library/Messages/chat.db`). This database only contains messages that have been **synced to your Mac**. If your conversations live on your iPhone or iPad but haven't synced, imessage-mcp won't see them.
+
+> If you only use iMessage on your Mac, you can skip this — your messages are already in `chat.db`.
+
+### How iMessage sync works
+
+Apple's "Messages in iCloud" keeps your full message history synchronized across all your Apple devices:
+
+```
+┌─────────────┐         ┌──────────┐         ┌──────────────┐
+│ iPhone/iPad │ ──────►  │  iCloud  │ ──────►  │   Your Mac   │
+│  (sends &   │ ◄──────  │(Messages │ ◄──────  │              │
+│  receives)  │         │in iCloud)│         │  chat.db      │
+└─────────────┘         └──────────┘         └──────┬───────┘
+                                                     │
+                                                     ▼
+                                              imessage-mcp
+                                              reads this ↑
+```
+
+Without "Messages in iCloud" enabled **on your Mac**, the Mac's `chat.db` only contains messages sent and received while Messages.app was actively running on that Mac.
+
+### Setup
+
+#### 1. Enable on your Mac
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/anipotts/imessage-mcp/main/assets/icloud-messages-mac-dark.png" alt="Messages.app Settings — Enable Messages in iCloud" width="600">
+</p>
+
+1. Open **Messages.app** on your Mac
+2. Go to **Settings** (Cmd+,) > **iMessage** tab
+3. Check **"Enable Messages in iCloud"**
+4. Keep Messages.app open — sync begins automatically
+
+#### 2. Enable on your iPhone/iPad
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/anipotts/imessage-mcp/main/assets/icloud-messages-iphone-dark.png" alt="iPhone Settings — Messages in iCloud toggle" width="300">
+</p>
+
+1. Open **Settings** > tap your **name** (Apple ID) > **iCloud** > **Messages**
+2. Toggle **"Use on this iPhone"** ON
+
+#### 3. Same Apple ID on all devices
+
+All devices must be signed into the **same Apple ID**. Check: Mac (System Settings > Apple ID), iPhone (Settings > tap your name).
+
+#### 4. Wait for sync to complete
+
+Initial sync can take **hours or even days** for large message histories. During sync:
+
+- Messages.app must remain **open** on your Mac
+- Your Mac should be connected to **Wi-Fi and power**
+- You'll see a **"Syncing with iCloud"** status in Messages.app
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/anipotts/imessage-mcp/main/assets/icloud-sync-progress-dark.png" alt="Messages.app — Downloading messages from iCloud progress" width="600">
+</p>
+
+#### 5. Sync contacts for name resolution
+
+imessage-mcp resolves phone numbers to names using your Mac's AddressBook. If contacts only exist on your iPhone:
+
+1. Open **System Settings** > **Apple ID** > **iCloud**
+2. Find **Contacts** and toggle it **ON**
+3. Wait for contacts to sync (usually under a minute)
+
+### Verify sync is complete
+
+```bash
+npx imessage-mcp doctor
+```
+
+Look for the **Messages** line — it shows how many messages are indexed locally. If this number seems low, iCloud sync is likely still in progress. Run `doctor` again later to confirm the count has stabilized.
+
+> **Tip:** On your iPhone, go to **Settings > General > iPhone Storage > Messages** to see your total message history size. Compare with what `doctor` reports on your Mac.
+
+### Common sync issues
+
+**Messages on iPhone don't appear on Mac:** "Messages in iCloud" must be enabled on **both** devices. Ensure both use the same Apple ID. Keep Messages.app open on your Mac. Run `npx imessage-mcp doctor` periodically to check if the count is growing.
+
+**Brand-new Mac shows no history:** Expected — enable "Messages in iCloud," connect to Wi-Fi and power, keep Messages.app open. For large histories (100K+ messages), initial sync may take 1–2 days.
+
+**History is incomplete:** Sync may still be in progress. If iCloud storage is full, sync pauses (check System Settings > Apple ID > iCloud > Manage Storage). Messages sent while sync was disabled won't sync retroactively.
+
+**Group chats missing members:** Group chat sync can lag behind 1:1 conversations. Ensure sync is enabled on all devices and has had time to complete. If members show as phone numbers, enable iCloud Contacts sync (step 5 above).
+
+</details>
 
 ## Troubleshooting
 
 <details>
 <summary><strong>"Cannot read chat.db" / SQLITE_CANTOPEN</strong></summary>
 
-Grant Full Disk Access to your terminal app:
+macOS protects `chat.db` with its Application Data permission. To grant access:
 
-System Settings > Privacy & Security > Full Disk Access > enable your terminal app.
+1. Open **System Settings > Privacy & Security > Full Disk Access**
+2. Enable the app running the MCP server (your terminal, Claude Desktop, Cursor, etc.)
+3. Restart the app after granting access
 
-Restart your terminal after granting access.
+GUI apps like Claude Desktop and Cursor may already have this permission — try running `npx imessage-mcp doctor` first.
+
+</details>
+
+<details>
+<summary><strong>Messages are missing or history is incomplete</strong></summary>
+
+imessage-mcp reads only messages synced to your Mac. See [iCloud Sync & Multiple Devices](#icloud-sync--multiple-devices) for full setup steps.
+
+Quick checklist:
+1. Open Messages.app > Settings > iMessage > enable "Messages in iCloud"
+2. Ensure the same Apple ID is signed in on all your devices
+3. Connect to Wi-Fi and power — initial sync can take hours
+4. Run `npx imessage-mcp doctor` to check message count
+
 </details>
 
 <details>
 <summary><strong>"No messages found"</strong></summary>
 
-Make sure Messages.app has been used on this Mac and has synced your messages. Run `npx imessage-mcp doctor` to verify.
+Make sure Messages.app has been used on this Mac and has synced your messages. If you recently set up this Mac or just enabled "Messages in iCloud," sync may still be in progress — see [iCloud Sync & Multiple Devices](#icloud-sync--multiple-devices). Run `npx imessage-mcp doctor` to verify your setup and message count.
+
 </details>
 
 <details>
 <summary><strong>Messages show phone numbers instead of names</strong></summary>
 
-Contact resolution uses your macOS AddressBook. If contacts are only on your phone and not synced to your Mac, names will not resolve. Sync contacts via iCloud or add them in the Contacts app.
+Contact resolution uses your macOS AddressBook. If contacts are only on your phone and not synced to your Mac, names will not resolve. See [iCloud Sync & Multiple Devices](#icloud-sync--multiple-devices) for instructions on enabling iCloud contact sync, or add contacts manually in the Contacts app.
+
 </details>
 
 <details>
 <summary><strong>Node.js version mismatch (MODULE_NOT_FOUND / NODE_MODULE_VERSION)</strong></summary>
 
-Your MCP client's bundled Node.js version differs from the one that compiled better-sqlite3's native module.
+Your MCP client's bundled Node.js version differs from the one that compiled better-sqlite3's native module. Fix by pointing to your system Node directly:
 
-Fix by pointing to your system Node directly:
-
-1. Find your Node path: `which node` (usually `/opt/homebrew/bin/node` or `/usr/local/bin/node`)
-2. Find imessage-mcp: `npm root -g` or `dirname $(which imessage-mcp)`
+1. Find your Node path: `which node`
+2. Find imessage-mcp: `npm root -g`
 3. Replace `"command": "npx"` with your system Node:
 
 ```json
@@ -539,6 +691,7 @@ Fix by pointing to your system Node directly:
   }
 }
 ```
+
 </details>
 
 <details>
@@ -547,6 +700,7 @@ Fix by pointing to your system Node directly:
 1. Verify the config file is at `~/Library/Application Support/Claude/claude_desktop_config.json`
 2. Restart Claude Desktop completely (Cmd+Q, then reopen)
 3. Run `npx imessage-mcp doctor` to confirm the server works independently
+
 </details>
 
 ## Uninstall
@@ -555,8 +709,6 @@ Fix by pointing to your system Node directly:
 npm uninstall -g imessage-mcp
 ```
 
-To revoke database access, remove your terminal from System Settings > Privacy & Security > Full Disk Access.
-
 ## How It Works
 
 imessage-mcp reads `~/Library/Messages/chat.db` using [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) in read-only mode with `query_only = ON`. Zero network requests. Contact names are resolved from your macOS AddressBook automatically.
@@ -564,12 +716,6 @@ imessage-mcp reads `~/Library/Messages/chat.db` using [better-sqlite3](https://g
 On macOS 14 (Sonoma) and later, Apple changed how message text is stored. Some messages have `NULL` in the `text` column but contain the actual text in the `attributedBody` binary blob. imessage-mcp extracts text from this blob automatically so no messages are left behind.
 
 All 26 tools are annotated with `readOnlyHint: true` so MCP clients can auto-approve them without user prompts.
-
-## Requirements
-
-- **macOS** -- iMessage is macOS-only
-- **Node.js 18+**
-- **Full Disk Access** for your terminal app
 
 ## License
 

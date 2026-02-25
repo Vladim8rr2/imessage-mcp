@@ -39,14 +39,20 @@ describe("no network imports in source files", () => {
     /\bglobalThis\.fetch\b/,
   ];
 
+  // transport.ts is explicitly allowed to use node:http — it implements the HTTP transport mode
+  const allowedNetworkFiles = new Set(["transport.ts"]);
+
   it("source files do not import fetch, http, https, net, axios, or request", () => {
     const violations: string[] = [];
 
     for (const filePath of sourceFiles) {
+      const relPath = path.relative(SRC_DIR, filePath);
+      if (allowedNetworkFiles.has(relPath)) continue;
+
       const content = readFileSync(filePath, "utf-8");
       for (const pattern of forbiddenPatterns) {
         if (pattern.test(content)) {
-          violations.push(`${path.relative(SRC_DIR, filePath)} matches ${pattern}`);
+          violations.push(`${relPath} matches ${pattern}`);
         }
       }
     }

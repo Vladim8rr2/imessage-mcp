@@ -1,7 +1,7 @@
 // doctor — setup diagnostics for imessage-mcp
 //
-// Checks: macOS?, chat.db exists?, Full Disk Access?, message count,
-// AddressBook contacts, Node version.
+// Checks: macOS?, chat.db exists?, database access (Application Data / FDA)?,
+// message count, AddressBook contacts, Node version.
 
 import { existsSync } from "node:fs";
 import { homedir, platform } from "node:os";
@@ -47,7 +47,7 @@ async function runChecks(): Promise<Check[]> {
       : `Not found at ${CHAT_DB}. Make sure Messages.app has been used on this Mac.`,
   });
 
-  // 4. Full Disk Access (try to open the db)
+  // 4. Database access (Application Data / Full Disk Access)
   if (dbExists) {
     try {
       const Database = (await import("better-sqlite3")).default;
@@ -58,9 +58,9 @@ async function runChecks(): Promise<Check[]> {
       const row = db.prepare("SELECT COUNT(*) as count FROM message").get() as any;
       const count = row?.count ?? 0;
       checks.push({
-        name: "Full Disk Access",
+        name: "Database access",
         status: "pass",
-        detail: "Database readable — Full Disk Access is granted",
+        detail: "Database readable — access granted",
       });
       checks.push({
         name: "Messages",
@@ -75,10 +75,10 @@ async function runChecks(): Promise<Check[]> {
       const message = err instanceof Error ? err.message : String(err);
       const isFDA = message.includes("SQLITE_CANTOPEN") || message.includes("authorization denied");
       checks.push({
-        name: "Full Disk Access",
+        name: "Database access",
         status: "fail",
         detail: isFDA
-          ? "Cannot read chat.db — grant Full Disk Access to your terminal:\n  System Settings → Privacy & Security → Full Disk Access → enable your terminal app"
+          ? "Cannot read chat.db — grant access in:\n  System Settings → Privacy & Security → Full Disk Access → enable your terminal app\n  (This covers the Application Data permission that chat.db requires.\n   Claude Desktop & Cursor users: your app may already have access.)"
           : `Database error: ${message}`,
       });
     }
