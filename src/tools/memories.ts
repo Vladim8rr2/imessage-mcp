@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { getDb, DATE_EXPR, MSG_FILTER, getMessageText, repliedToCondition } from "../db.js";
+import { getDb, DATE_EXPR, MSG_FILTER, getMessageText, repliedToCondition, safeText } from "../db.js";
 import { lookupContact } from "../contacts.js";
 import { clamp, isoDateSchema } from "../helpers.js";
 
@@ -95,7 +95,7 @@ export function registerMemoryTools(server: McpServer) {
       // Group by year, limit per year, enrich
       const byYear: Record<string, any[]> = {};
       for (const msg of messages) {
-        msg.text = getMessageText(msg);
+        msg.text = safeText(getMessageText(msg));
         delete msg.attributedBody;
         if (!msg.text) continue;
         const yr = msg.year;
@@ -161,9 +161,9 @@ export function registerMemoryTools(server: McpServer) {
         WHERE h.id LIKE @contact ${MSG_FILTER}
       `).get({ contact: pattern }) as any;
 
-      first.text = getMessageText(first);
+      first.text = safeText(getMessageText(first));
       delete first.attributedBody;
-      last.text = getMessageText(last);
+      last.text = safeText(getMessageText(last));
       delete last.attributedBody;
 
       const contact = lookupContact(first.handle);

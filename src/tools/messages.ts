@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { getDb, DATE_EXPR, baseMessageConditions, getMessageText, repliedToCondition } from "../db.js";
+import { getDb, DATE_EXPR, baseMessageConditions, getMessageText, repliedToCondition, safeText } from "../db.js";
 import { lookupContact } from "../contacts.js";
 import { formatResults, clamp, DEFAULT_LIMIT, MAX_LIMIT, isoDateSchema } from "../helpers.js";
 
@@ -100,7 +100,7 @@ export function registerMessageTools(server: McpServer) {
         ).all({ ...bindings, limit, offset }) as any[];
 
         for (const row of textRows) {
-          row.text = getMessageText(row);
+          row.text = safeText(getMessageText(row));
           delete row.attributedBody;
         }
 
@@ -119,7 +119,7 @@ export function registerMessageTools(server: McpServer) {
             if (++scanned > MAX_SCAN) break;
             const text = getMessageText(row);
             if (text && text.toLowerCase().includes(queryLower)) {
-              row.text = text;
+              row.text = safeText(text);
               delete row.attributedBody;
               abMatches.push(row);
               if (abMatches.length >= remaining) break;
@@ -149,7 +149,7 @@ export function registerMessageTools(server: McpServer) {
         ).all({ ...bindings, limit, offset }) as any[];
 
         for (const row of rows) {
-          row.text = getMessageText(row);
+          row.text = safeText(getMessageText(row));
           delete row.attributedBody;
         }
         enrichWithContactNames(rows);
@@ -229,7 +229,7 @@ export function registerMessageTools(server: McpServer) {
 
       // Post-process: extract text from attributedBody when text is null
       for (const row of rows) {
-        row.text = getMessageText(row);
+        row.text = safeText(getMessageText(row));
         delete row.attributedBody;
       }
       enrichWithContactNames(rows);

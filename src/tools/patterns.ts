@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { getDb, DATE_EXPR, MSG_FILTER, repliedToCondition, getMessageText } from "../db.js";
+import { getDb, DATE_EXPR, MSG_FILTER, repliedToCondition, getMessageText, safeText } from "../db.js";
 import { lookupContact } from "../contacts.js";
 import { clamp, MAX_LIMIT, isoDateSchema } from "../helpers.js";
 
@@ -447,7 +447,7 @@ export function registerPatternTools(server: McpServer) {
               silence_start: r.silence_start,
               silence_end: r.silence_end,
               broken_by: r.broken_by_me ? "you" : contact.name,
-              ice_breaker_text: getMessageText({ text: r.break_text, attributedBody: r.break_body }) || "(attachment)",
+              ice_breaker_text: safeText(getMessageText({ text: r.break_text, attributedBody: r.break_body })) || "(attachment)",
             })),
           }, null, 2),
         }],
