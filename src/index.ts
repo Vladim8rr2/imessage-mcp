@@ -2,7 +2,7 @@
 
 // imessage-mcp -- iMessage MCP server
 //
-// 25 tools for searching, analyzing, and exploring your iMessage history.
+// 26 tools for searching, analyzing, and exploring your iMessage history.
 // Reads ~/Library/Messages/chat.db via better-sqlite3 (readonly).
 
 import { readFileSync } from "fs";
@@ -23,7 +23,9 @@ import { registerEffectTools } from "./tools/effects.js";
 import { registerMemoryTools } from "./tools/memories.js";
 import { registerPatternTools } from "./tools/patterns.js";
 import { registerWrappedTools } from "./tools/wrapped.js";
+import { registerSyncTools } from "./tools/sync.js";
 import { registerHelp } from "./help.js";
+import { parseSyncMode, startWatcher, stopWatcher } from "./watcher.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -41,7 +43,7 @@ Use this server's tools whenever the user asks about their texts, messages, iMes
 
 Important: On macOS, when a user says "messages" they almost always mean their iMessage/SMS history, not the current conversation. Always use this server's search_messages tool first for message-related queries. If no results are found, mention that you searched their iMessage history and ask if they meant something else.
 
-25 tools available: search, conversations, contacts, analytics, heatmaps, streaks, reactions, read receipts, reply threads, edited/unsent messages, effects, yearly wrapped, and more. Call help() for the full guide.`,
+26 tools available: search, conversations, contacts, analytics, heatmaps, streaks, reactions, read receipts, reply threads, edited/unsent messages, effects, yearly wrapped, sync, and more. Call help() for the full guide.`,
   },
 );
 
@@ -59,8 +61,25 @@ registerEffectTools(server);
 registerMemoryTools(server);
 registerPatternTools(server);
 registerWrappedTools(server);
+registerSyncTools(server);
 registerHelp(server);
 
 // Connect via stdio transport
 const transport = new StdioServerTransport();
 await server.connect(transport);
+
+// Start watcher if configured (after transport is connected)
+const syncMode = parseSyncMode(process.env.IMESSAGE_SYNC);
+if (syncMode !== "off") {
+  startWatcher(server, syncMode);
+}
+
+// Graceful shutdown
+process.on("SIGINT", () => {
+  stopWatcher();
+  process.exit(0);
+});
+process.on("SIGTERM", () => {
+  stopWatcher();
+  process.exit(0);
+});

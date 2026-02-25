@@ -8,7 +8,7 @@
 [![CI](https://github.com/anipotts/imessage-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/anipotts/imessage-mcp/actions/workflows/ci.yml)
 [![Node](https://img.shields.io/badge/Node.js-18%2B-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
 
-**25 tools for exploring your iMessage history on macOS.**
+**26 tools for exploring your iMessage history on macOS.**
 
 <p align="center">
   <picture>
@@ -18,7 +18,7 @@
   </picture>
 </p>
 
-An [MCP server](https://modelcontextprotocol.io) that gives AI assistants read-only access to your local iMessage database. Search messages, analyze conversations, explore reactions, read receipts, reply threads, edited messages, effects, streaks, conversation patterns, and more. Nothing leaves your machine.
+An [MCP server](https://modelcontextprotocol.io) that gives AI assistants **read-only** access to your local iMessage database — with full control over what's shared. Nothing is written, modified, or uploaded. Your messages stay on your Mac; the AI only sees what you ask about. Enable [Safe Mode](#safe-mode) to redact all message text and share only metadata.
 
 ## Install
 
@@ -72,7 +72,7 @@ See [Setup](#setup) for Cursor, Windsurf, VS Code, Codex CLI, Cline, JetBrains, 
 
 ## Tools
 
-25 tools across 9 categories. All read-only. All annotated with `readOnlyHint: true` for auto-approval.
+26 tools across 10 categories. All read-only. All annotated with `readOnlyHint: true` — your MCP client can auto-approve every tool without prompts.
 
 ### Messages
 
@@ -142,6 +142,12 @@ See [Setup](#setup) for Cursor, Windsurf, VS Code, Codex CLI, Cline, JetBrains, 
 | `get_thread` | Reconstruct reply thread trees |
 | `get_edited_messages` | Edited and unsent messages with timing |
 | `get_message_effects` | Slam, loud, confetti, fireworks analytics |
+
+### Sync
+
+| Tool | Description |
+|------|-------------|
+| `check_new_messages` | Track new messages since your last check (baseline + delta) |
 
 ### System
 
@@ -452,9 +458,34 @@ By default, listing and global search tools only include contacts you have actua
 
 **Filtered tools:** `search_messages` (global), `list_contacts`, `message_stats` (global), `temporal_heatmap` (global), `who_initiates` (global), `streaks` (global), `on_this_day` (global), `forgotten_contacts`, `yearly_wrapped`.
 
-**Unfiltered tools:** `get_conversation`, `get_contact`, `contact_stats`, `first_last_message`. These always return results for any contact you specify.
+**Unfiltered tools:** `get_conversation`, `get_contact`, `contact_stats`, `first_last_message`, `conversation_gaps`, `get_reactions`, `get_read_receipts`, `get_thread`, `get_edited_messages`, `get_message_effects`, group chats, attachments, `check_new_messages`. These always return results for any contact you specify.
 
 To include all contacts (including unrecognized senders), pass `include_all: true` to any filtered tool.
+
+## Sync & New Messages
+
+By default, every query reads the latest data — if someone texts you, your next tool call sees it immediately. No sync needed.
+
+For proactive awareness, the `check_new_messages` tool tracks what arrived since your last check:
+
+1. First call sets a baseline
+2. Subsequent calls report the delta — count, who messaged, and optional text previews
+
+For push notifications (opt-in):
+
+```json
+{
+  "mcpServers": {
+    "imessage": {
+      "command": "npx",
+      "args": ["-y", "imessage-mcp"],
+      "env": { "IMESSAGE_SYNC": "watch" }
+    }
+  }
+}
+```
+
+This watches your iMessage database for changes and notifies your AI client within seconds. Uses macOS FSEvents — zero CPU when idle.
 
 ## Configuration
 
@@ -462,6 +493,7 @@ To include all contacts (including unrecognized senders), pass `include_all: tru
 |----------|---------|-------------|
 | `IMESSAGE_DB` | `~/Library/Messages/chat.db` | Path to iMessage database |
 | `IMESSAGE_SAFE_MODE` | `false` | Set to `1` to redact all message bodies. Tools return only metadata. |
+| `IMESSAGE_SYNC` | `off` | Message sync mode: `off` (default), `watch` (FSEvents, near-real-time), or `poll:N` (every N seconds). |
 
 ## Troubleshooting
 
@@ -528,11 +560,11 @@ To revoke database access, remove your terminal from System Settings > Privacy &
 
 ## How It Works
 
-imessage-mcp reads `~/Library/Messages/chat.db` using [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) in read-only mode with `query_only = ON`. Contact names are resolved from your macOS AddressBook automatically.
+imessage-mcp reads `~/Library/Messages/chat.db` using [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) in read-only mode with `query_only = ON`. Zero network requests. Contact names are resolved from your macOS AddressBook automatically.
 
 On macOS 14 (Sonoma) and later, Apple changed how message text is stored. Some messages have `NULL` in the `text` column but contain the actual text in the `attributedBody` binary blob. imessage-mcp extracts text from this blob automatically so no messages are left behind.
 
-All 25 tools are annotated with `readOnlyHint: true` so MCP clients can auto-approve them without user prompts.
+All 26 tools are annotated with `readOnlyHint: true` so MCP clients can auto-approve them without user prompts.
 
 ## Requirements
 

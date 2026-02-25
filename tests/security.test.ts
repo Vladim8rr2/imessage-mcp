@@ -121,6 +121,7 @@ describe("tool registration functions exist and are callable", () => {
       { path: "../src/tools/memories.js", name: "registerMemoryTools" },
       { path: "../src/tools/patterns.js", name: "registerPatternTools" },
       { path: "../src/tools/wrapped.js", name: "registerWrappedTools" },
+      { path: "../src/tools/sync.js", name: "registerSyncTools" },
     ];
 
     for (const mod of modules) {

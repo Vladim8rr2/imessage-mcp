@@ -1,6 +1,6 @@
 // Help system — help tool for imessage-mcp
 //
-// Provides a comprehensive guide to all 25 tools.
+// Provides a comprehensive guide to all 26 tools.
 
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
@@ -15,12 +15,12 @@ const VERSION = pkg.version;
 function buildHelpText(): string {
   return `# imessage-mcp v${VERSION}
 
-Read-only access to your iMessage database on macOS. 25 tools for searching,
+Read-only access to your iMessage database on macOS. 26 tools for searching,
 analyzing, and exploring your entire message history.
 
 ---
 
-## Tools (25)
+## Tools (26)
 
 ### Messages & Conversations
 | Tool                | What it does                                                         |
@@ -98,6 +98,11 @@ analyzing, and exploring your entire message history.
 |---------------------|----------------------------------------------------------------------|
 | get_message_effects | iMessage effects analytics: slam, loud, confetti, fireworks, etc.    |
 
+### Sync
+| Tool                | What it does                                                         |
+|---------------------|----------------------------------------------------------------------|
+| check_new_messages  | Track new messages since your last check (baseline + delta)          |
+
 ### System
 | Tool                | What it does                                                         |
 |---------------------|----------------------------------------------------------------------|
@@ -151,6 +156,9 @@ analyzing, and exploring your entire message history.
 - Use \`resolve_contact\` first if you're unsure of the exact handle
 - Contact names are resolved from your macOS AddressBook automatically
 - All tools are read-only — nothing is modified
+- First call to \`check_new_messages\` sets a baseline — call again later to see what's new
+- Use \`after_rowid\` on \`get_conversation\` to page forward through new messages
+- Set \`IMESSAGE_SYNC=watch\` for proactive new-message notifications, or \`poll:30\` for polling
 - Call \`help()\` anytime to see this guide again
 
 ---
@@ -167,7 +175,7 @@ forgotten_contacts, yearly_wrapped
 
 **Not affected**: get_conversation, get_contact, resolve_contact, contact_stats,
 first_last_message, conversation_gaps, reactions, read receipts,
-threads, edits, effects, group chats, attachments
+threads, edits, effects, group chats, attachments, check_new_messages
 
 To include all contacts (including spam): pass \`include_all: true\` to any filtered tool.
 
@@ -193,7 +201,7 @@ Useful for demos, shared environments, or when you only need analytics.
 export function registerHelp(server: McpServer) {
   server.tool(
     "help",
-    "Show the imessage-mcp guide: all 25 tools and usage examples. Call this when you're unsure what's available.",
+    "Show the imessage-mcp guide: all 26 tools and usage examples. Call this when you're unsure what's available.",
     {},
     { readOnlyHint: true, destructiveHint: false, openWorldHint: false },
     async () => ({

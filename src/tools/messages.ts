@@ -182,12 +182,13 @@ export function registerMessageTools(server: McpServer) {
   // -- get_conversation --
   server.tool(
     "get_conversation",
-    "Get a full conversation thread with a specific contact or chat. Supports cursor-based pagination via before_rowid for scrolling through history.",
+    "Get a full conversation thread with a specific contact or chat. Supports cursor-based pagination via before_rowid (backward) or after_rowid (forward) for scrolling through history.",
     {
       contact: z.string().optional().describe("Contact handle (phone/email) or name"),
       chat_id: z.string().optional().describe("Chat identifier (e.g. chat123456789)"),
       limit: z.number().optional().describe("Max messages (default 50, max 500)"),
       before_rowid: z.number().optional().describe("Cursor: only messages before this ROWID (for pagination)"),
+      after_rowid: z.number().optional().describe("Cursor: only messages after this ROWID (for catching up on new messages)"),
       date_from: isoDateSchema.optional().describe("Start date filter"),
       date_to: isoDateSchema.optional().describe("End date filter"),
     },
@@ -198,6 +199,9 @@ export function registerMessageTools(server: McpServer) {
 
       if (!params.contact && !params.chat_id) {
         return { content: [{ type: "text", text: "Error: provide either 'contact' or 'chat_id'" }] };
+      }
+      if (params.before_rowid !== undefined && params.after_rowid !== undefined) {
+        return { content: [{ type: "text", text: "Error: provide either before_rowid or after_rowid, not both" }] };
       }
 
       const conditions: string[] = baseMessageConditions();
@@ -226,9 +230,13 @@ export function registerMessageTools(server: McpServer) {
         }
       }
 
-      if (params.before_rowid) {
+      if (params.before_rowid !== undefined) {
         conditions.push("m.ROWID < @before_rowid");
         bindings.before_rowid = params.before_rowid;
+      }
+      if (params.after_rowid !== undefined) {
+        conditions.push("m.ROWID > @after_rowid");
+        bindings.after_rowid = params.after_rowid;
       }
       if (params.date_from) {
         conditions.push(`${DATE_EXPR} >= @date_from`);
@@ -240,6 +248,7 @@ export function registerMessageTools(server: McpServer) {
       }
 
       const where = conditions.join(" AND ");
+      const forward = params.after_rowid !== undefined;
 
       const sql = `
         SELECT
@@ -255,7 +264,7 @@ export function registerMessageTools(server: McpServer) {
         JOIN chat c ON cmj.chat_id = c.ROWID
         LEFT JOIN handle h ON m.handle_id = h.ROWID
         WHERE ${where}
-        ORDER BY m.date DESC
+        ORDER BY m.date ${forward ? "ASC" : "DESC"}
         LIMIT @limit
       `;
       const rows = db.prepare(sql).all({ ...bindings, limit }) as any[];
@@ -267,14 +276,20 @@ export function registerMessageTools(server: McpServer) {
       }
       enrichWithContactNames(rows);
 
-      // Reverse to chronological order
-      rows.reverse();
+      // Reverse to chronological order (backward pagination fetches DESC)
+      if (!forward) {
+        rows.reverse();
+      }
 
-      const firstRowid = rows.length > 0 ? (rows[0] as any).rowid : null;
+      const firstRowid = rows.length > 0 ? rows[0].rowid : null;
+      const lastRowid = rows.length > 0 ? rows[rows.length - 1].rowid : null;
       const result = {
         messages: rows,
         count: rows.length,
-        cursor: firstRowid ? { before_rowid: firstRowid } : null,
+        cursor: {
+          before_rowid: firstRowid ?? undefined,
+          after_rowid: lastRowid ?? undefined,
+        },
         has_more: rows.length === limit,
       };
 
