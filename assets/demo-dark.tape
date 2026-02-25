@@ -37,19 +37,19 @@ Sleep 200ms
 Enter
 Sleep 7s
 
-# Q1: Top contacts — shows list_contacts MCP tool
-Type "my top 5 most texted contacts — names and message counts, list only"
+# Q1: Message stats — no contact names, shows impressive scale
+Type "how many iMessages do I have total? sent vs received, and what year did I start"
 Sleep 200ms
 Enter
-Sleep 38s
+Sleep 35s
 
-# Q2: Search — shows search_messages MCP tool
-Type "find 3 messages mentioning 'coffee' — sender, date, and message only"
+# Q2: Search sent messages only — "You" as sender, no contact names
+Type "find 3 messages I sent mentioning 'dinner' — just date and message text"
 Sleep 200ms
 Enter
-Sleep 38s
+Sleep 35s
 
-# Q3: Analytics — shows temporal_heatmap MCP tool
+# Q3: Analytics — temporal heatmap, no contact names
 Type "am I a night owl or morning texter? one sentence"
 Sleep 200ms
 Enter
