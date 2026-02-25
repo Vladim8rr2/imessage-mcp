@@ -102,13 +102,13 @@ export function extractTextFromAttributedBody(blob: Buffer): string | null {
       for (let i = searchStart; i < Math.min(searchStart + 50, blob.length - 2); i++) {
         const byte = blob[i];
         // Check for short string length byte (0x01-0x7f range indicates length)
-        if (byte > 0 && byte < 128) {
+        if (byte > 1 && byte < 128) {
           const potentialLen = byte;
           if (i + 1 + potentialLen <= blob.length) {
             const candidate = blob.subarray(i + 1, i + 1 + potentialLen);
-            // Validate it's printable UTF-8
+            // Validate it's printable UTF-8 and at least 2 chars (skip metadata bytes)
             const text = candidate.toString("utf-8");
-            if (text.length > 0 && /^[\x20-\x7E\u00A0-\uFFFF]+/.test(text)) {
+            if (text.length >= 2 && /^[\x20-\x7E\u00A0-\uFFFF]+/.test(text)) {
               return text.trim();
             }
           }
@@ -156,10 +156,13 @@ export function extractTextFromAttributedBody(blob: Buffer): string | null {
 }
 
 /**
- * Get message text, falling back to attributedBody extraction when text is null.
+ * Get message text, falling back to attributedBody extraction when text is null
+ * or when text is just the object replacement character (U+FFFC) placeholder.
  */
 export function getMessageText(row: any): string | null {
-  if (row.text) return row.text;
+  if (row.text && row.text !== "\ufffc" && !row.text.startsWith("\ufffc\ufffc")) {
+    return row.text;
+  }
   if (row.attributedBody) {
     return extractTextFromAttributedBody(row.attributedBody);
   }
