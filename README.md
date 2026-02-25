@@ -16,24 +16,40 @@
 
 An [MCP server](https://modelcontextprotocol.io) that gives AI assistants read-only access to your local iMessage database. Search messages, analyze conversations, explore reactions, read receipts, reply threads, edited messages, effects, streaks, conversation patterns, and more. Nothing leaves your machine.
 
-## Quick Start
+## Install
 
-**1. Grant Full Disk Access** to your terminal app.
+```bash
+npm install -g imessage-mcp
+```
 
-System Settings > Privacy & Security > Full Disk Access > enable your terminal (Terminal, iTerm2, Warp, etc.)
-
-**2. Run diagnostics** to verify everything works.
+Or run without installing:
 
 ```bash
 npx imessage-mcp doctor
 ```
 
-**3. Add to your MCP client** (see [Setup](#setup) for all clients).
+### Add to your AI client
 
 ```bash
-# Claude Code
+# Claude Code (one command)
 claude mcp add imessage -- npx -y imessage-mcp
 ```
+
+```bash
+# Claude Desktop — add to ~/Library/Application Support/Claude/claude_desktop_config.json
+```
+
+```json
+{ "mcpServers": { "imessage": { "command": "npx", "args": ["-y", "imessage-mcp"] } } }
+```
+
+See [Setup](#setup) for Cursor, Windsurf, VS Code, Codex CLI, Cline, JetBrains, and Zed.
+
+### Prerequisites
+
+1. **macOS** (iMessage is macOS-only)
+2. **Node.js 18+** (`node --version`)
+3. **Full Disk Access** for your terminal: System Settings > Privacy & Security > Full Disk Access
 
 ## Tools
 
