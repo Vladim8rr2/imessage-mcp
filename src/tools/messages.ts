@@ -3,7 +3,17 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { getDb, DATE_EXPR, baseMessageConditions, getMessageText, repliedToCondition } from "../db.js";
+import { lookupContact } from "../contacts.js";
 import { formatResults, clamp, DEFAULT_LIMIT, MAX_LIMIT } from "../helpers.js";
+
+/** Enrich rows with contact_name from AddressBook */
+function enrichWithContactNames(rows: any[]): void {
+  for (const row of rows) {
+    if (row.handle) {
+      row.contact_name = lookupContact(row.handle).name;
+    }
+  }
+}
 
 export function registerMessageTools(server: McpServer) {
   // -- search_messages --
@@ -120,9 +130,11 @@ export function registerMessageTools(server: McpServer) {
         // Merge and sort by date descending
         const merged = [...textRows, ...abMatches];
         merged.sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
+        const results = merged.slice(0, limit);
+        enrichWithContactNames(results);
 
         return {
-          content: [{ type: "text", text: formatResults(merged.slice(0, limit), textTotal, offset, limit) }],
+          content: [{ type: "text", text: formatResults(results, textTotal, offset, limit) }],
         };
       } else {
         // No query — straightforward fetch
@@ -140,6 +152,7 @@ export function registerMessageTools(server: McpServer) {
           row.text = getMessageText(row);
           delete row.attributedBody;
         }
+        enrichWithContactNames(rows);
 
         return {
           content: [{ type: "text", text: formatResults(rows, total, offset, limit) }],
@@ -219,6 +232,7 @@ export function registerMessageTools(server: McpServer) {
         row.text = getMessageText(row);
         delete row.attributedBody;
       }
+      enrichWithContactNames(rows);
 
       // Reverse to chronological order
       rows.reverse();

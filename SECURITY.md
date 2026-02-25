@@ -2,9 +2,9 @@
 
 ## Reporting Vulnerabilities
 
-If you discover a security issue, please report it privately via [GitHub Issues](https://github.com/anipotts/imessage-mcp/issues) with the label "security" or email the maintainer directly.
+If you discover a security vulnerability, please report it through [GitHub's private vulnerability reporting](https://github.com/anipotts/imessage-mcp/security/advisories/new).
 
-Do not open a public issue for vulnerabilities that could be exploited.
+Do not open a public issue for security vulnerabilities.
 
 ## Design
 

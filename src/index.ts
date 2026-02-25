@@ -28,11 +28,13 @@ const server = new McpServer(
     version: "1.1.0",
   },
   {
-    instructions: `iMessage MCP — read-only access to the user's iMessage history on macOS.
+    instructions: `iMessage MCP — read-only access to the user's full iMessage history on macOS.
 
-When the user asks about their messages, texts, iMessages, or messaging history, use this server's tools to search and analyze their iMessage database. This includes questions like "what did I text [name] about", "show my conversation with [name]", "who do I text the most", etc.
+Use this server's tools whenever the user asks about their texts, messages, iMessages, conversations, or messaging history. This includes: "search my messages for X", "what did I text about Y", "show my conversation with Z", "who do I text the most", "when did I last talk to", etc.
 
-If the user mentions "messages" and it's ambiguous whether they mean iMessages or something else, check iMessage first — it's usually what they mean on macOS.`,
+Important: On macOS, when a user says "messages" they almost always mean their iMessage/SMS history, not the current conversation. Always use this server's search_messages tool first for message-related queries. If no results are found, mention that you searched their iMessage history and ask if they meant something else.
+
+25 tools available: search, conversations, contacts, analytics, heatmaps, streaks, reactions, read receipts, reply threads, edited/unsent messages, effects, yearly wrapped, and more. Call help() for the full guide.`,
   },
 );
 
